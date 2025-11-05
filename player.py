@@ -1,6 +1,6 @@
 import pygame
 from circleshape import CircleShape
-from constants import PLAYER_RADIUS, PLAYER_TURN_SPEED, PLAYER_SPEED, PLAYER_SHOT_SPEED, PLAYER_SHOT_COOLDOWN
+from constants import *
 from shot import Shot
 
 class Player(CircleShape):
@@ -8,6 +8,7 @@ class Player(CircleShape):
         super().__init__(x, y, PLAYER_RADIUS)
         self.rotation = 0
         self.shot_timer = 0
+        self.speed = 0
 
     # in the player class
     def triangle(self):
@@ -27,20 +28,36 @@ class Player(CircleShape):
     def update(self, dt):
         self.shot_timer -= dt
         keys = pygame.key.get_pressed()
+        self.move(dt)
 
         if keys[pygame.K_a]:
             self.rotate(-dt)
         if keys[pygame.K_d]:
             self.rotate(dt)
         if keys[pygame.K_w]:
-            self.move(dt)
+            self.speed += PLAYER_ACCELERATION
+            if(self.speed > PLAYER_MAX_SPEED):
+                self.speed = PLAYER_MAX_SPEED
         if keys[pygame.K_SPACE]:
             if(self.shot_timer < 0):
                 self.shoot()
 
     def move(self, dt):
             forward = pygame.Vector2(0, 1).rotate(self.rotation)
-            self.position += forward * PLAYER_SPEED * dt
+            self.position += forward * self.speed * dt
+            print(f"position y {self.position.y}")
+            if(self.position.x > SCREEN_WIDTH):
+                self.position.x -= SCREEN_WIDTH
+            elif(self.position.x < 0):
+                self.position.x += SCREEN_WIDTH
+            if(self.position.y > SCREEN_HEIGHT):
+                self.position.y -= SCREEN_HEIGHT
+            elif(self.position.y < 0):
+                self.position.y += SCREEN_HEIGHT
+            
+            self.speed -= PLAYER_ACCELERATION / 10
+            if(self.speed < 0):
+                self.speed = 0
 
     def shoot(self):
         self.shot_timer = PLAYER_SHOT_COOLDOWN
